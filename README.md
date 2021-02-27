@@ -11,3 +11,5 @@ Implementado na placa de desenvolvimento Terasic DE10-Nano (SoC Cyclone V FPGA)
 
 ## Licença 
 [MIT License](https://choosealicense.com/licenses/mit/)
+
+2021
