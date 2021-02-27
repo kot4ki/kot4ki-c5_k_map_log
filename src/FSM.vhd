@@ -1,0 +1,117 @@
+--=======================================================
+-- Descricao da maquina de estados finitos (FSM) 
+-- Matheus Mitsuo de A. Kotaki, São Carlos-SP
+-- EESC - USP - 2021
+--=======================================================
+
+library ieee;
+use ieee.std_logic_1164.all; 
+use ieee.numeric_std.all;
+
+entity FSM is
+port(
+	clk_fsm, rst_fsm: in std_logic;
+	start_g         : in std_logic;
+	count_q         : in std_logic_vector(14 DOWNTO 0);
+	
+	reset_prng, enable_count, clear_counter, start_prng, wr_enable, done_gen: out std_logic
+	);
+end FSM;
+
+architecture arch of FSM is
+	
+	type state_type is (std_by, reset, generating, done);
+	signal current_state, next_state: state_type;
+	
+begin
+
+	process(clk_fsm, rst_fsm)
+    begin
+        if (rst_fsm = '1') then -- se resetado vai para o estado = std_by
+            current_state <= std_by;
+        elsif (clk_fsm'event and clk_fsm = '1') then -- senão, atualiza o estado
+            current_state <= next_state;
+        else
+            null;
+        end if; 
+    end process;
+
+	process(current_state, start_g, count_q)
+	begin
+
+		case current_state is
+			when std_by => --se estado = std_by (espera)
+				
+				if start_g = '1' then
+					next_state    <= reset;
+					reset_prng    <= '1';
+					enable_count  <= '0';
+					clear_counter <= '1';
+					start_prng    <= '0';
+					wr_enable     <= '0';
+					done_gen      <= '0';
+				else
+					next_state    <= std_by;
+					reset_prng    <= '1';
+					enable_count  <= '0';
+					clear_counter <= '1';
+					start_prng    <= '1';
+					wr_enable     <= '0';
+					done_gen      <= '0';
+				end if;
+				
+			when reset =>   --se estado = reset (reinicio)
+					next_state    <= generating;
+					reset_prng    <= '0';
+					enable_count  <= '1';
+					clear_counter <= '0';
+					start_prng    <= '0';
+					wr_enable     <= '1';
+					done_gen      <= '0';
+				
+				
+			when generating =>   --se estado = generating (gerando)
+
+				if count_q = "111111111111111" then
+					next_state    <= done;
+					reset_prng    <= '1';
+					enable_count  <= '0';
+					clear_counter <= '1';
+					start_prng    <= '1';
+					wr_enable     <= '1';
+					done_gen      <= '0';
+				else
+					next_state    <= generating;
+					reset_prng    <= '0';
+					enable_count  <= '1';
+					clear_counter <= '0';
+					start_prng    <= '0';
+					wr_enable     <= '1';
+					done_gen      <= '0';
+				end if;
+				 
+			when done =>   --se estado = done (concluido)
+			
+				if start_g = '0' then
+					next_state    <= std_by;
+					reset_prng    <= '1';
+					enable_count  <= '0';
+					clear_counter <= '1';
+					start_prng    <= '1';
+					wr_enable     <= '0';
+					done_gen      <= '0';
+				else 
+					next_state    <= done;
+					reset_prng    <= '1';
+					enable_count  <= '0';
+					clear_counter <= '1';
+					start_prng    <= '1';
+					wr_enable     <= '0';
+					done_gen      <= '1';
+				end if;
+			
+		end case;		
+	end process;
+	 
+
+end arch;
