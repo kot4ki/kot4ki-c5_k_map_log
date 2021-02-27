@@ -2,6 +2,8 @@
 
 Sistema de geração e armazenamento de 2^20 bits aleatórios gerados por um PRNG baseado no k-mapa logístico.
 
+![](imagens/geral.png)
+
 ## Dispositivo
 
 Implementado na placa de desenvolvimento Terasic DE10-Nano (SoC Cyclone V FPGA)
